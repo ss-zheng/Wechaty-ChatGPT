@@ -50,33 +50,8 @@ export async function onMessage(msg: Message) {
     if (content === 'ding') {
         await contact.say('dong');
     }
-    // return text
-    if (content.startsWith("/t ")) {
-        if (conversation.length === MEMORY_LIMIT) {
-            // reset to initial state when reach the memory limit
-            log.info("Resetting memory");
-            conversation = new Array();
-            conversation.forEach(val => initState.push(Object.assign({}, val)));
-        }
-        conversation.push({ "role": "user", "content": content.replace("/t", "") })
-        const response = await openai.createChatCompletion({
-            model: "gpt-3.5-turbo",
-            messages: conversation,
-        });
-
-        try {
-            const replyContent = response.data.choices[0].message!.content!
-            await contact.say(replyContent);
-            
-            // record reply
-            const reply: ChatCompletionRequestMessage = { "role": "assistant", "content": replyContent };
-            conversation.push(reply);
-        } catch (e) {
-            console.error(e);
-        }
-    }
     // return image
-    if (content.startsWith("/i ")) {
+    if (content.startsWith("/img ")) {
         if (conversation.length === MEMORY_LIMIT) {
             // reset to initial state when reach the memory limit
             log.info("Resetting memory");
@@ -106,6 +81,30 @@ export async function onMessage(msg: Message) {
             conversation.push(reply);
         } catch (e) {
             console.error(e)
+        }
+    } else {
+        // return text if no slash command is specified
+        if (conversation.length === MEMORY_LIMIT) {
+            // reset to initial state when reach the memory limit
+            log.info("Resetting memory");
+            conversation = new Array();
+            conversation.forEach(val => initState.push(Object.assign({}, val)));
+        }
+        conversation.push({ "role": "user", "content": content.replace("/t", "") })
+        const response = await openai.createChatCompletion({
+            model: "gpt-3.5-turbo",
+            messages: conversation,
+        });
+
+        try {
+            const replyContent = response.data.choices[0].message!.content!
+            await contact.say(replyContent);
+            
+            // record reply
+            const reply: ChatCompletionRequestMessage = { "role": "assistant", "content": replyContent };
+            conversation.push(reply);
+        } catch (e) {
+            console.error(e);
         }
     }
 }

@@ -1,11 +1,25 @@
 // Importing the Wechaty npm package
-import { WechatyBuilder, Contact, Message, ScanStatus, log } from "wechaty";
+import { Wechaty,WechatyBuilder, Contact, Message, ScanStatus, log } from "wechaty";
 import { Configuration, OpenAIApi, ChatCompletionRequestMessage } from "openai";
-import dotenv from "dotenv";
+import { PuppetPadlocal } from "wechaty-puppet-padlocal";
 import { onScan, onLogin, onLogout, onMessage } from "./utils";
+import dotenv from "dotenv";
 
 dotenv.config();
 console.log(process.env.OPENAI_API_KEY)
+
+
+export function createBot(): Wechaty {
+  const token: string = process.env.WECHATY_PUPPET_SERVICE_TOKEN!
+  const puppet = new PuppetPadlocal({
+    token,
+  });
+
+  return WechatyBuilder.build({
+    name: "chatgpt-bot",
+    puppet,
+  });
+}
 
 
 // config openAI
@@ -15,13 +29,7 @@ const configuration = new Configuration({
 export const openai = new OpenAIApi(configuration);
 
 // Initializing the bot
-export const bot = WechatyBuilder.build({
-    name: 'chatgpt-bot',
-    puppet: "wechaty-puppet-wechat4u",
-    puppetOptions: {
-        uos: true,
-    },
-})
+export const bot = createBot();
 
 // Keep the conversation state
 export const initState: Array<ChatCompletionRequestMessage> = new Array({ "role": "system", "content": "You are a helpful assistant." })
@@ -33,4 +41,8 @@ bot.on('message', onMessage)
 
 bot.start()
   .then(() => log.info('StarterBot', 'Starter Bot Started.'))
+  .catch(e => log.error('StarterBot', e))
+
+bot.ready()
+  .then(() => log.info('StarterBot', 'Starter Bot Ready.'))
   .catch(e => log.error('StarterBot', e))
