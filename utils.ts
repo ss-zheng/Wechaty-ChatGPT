@@ -1,9 +1,14 @@
 import { Contact, Message, ScanStatus, log } from "wechaty";
-import { bot, openai } from "./bot";
+import { bot, openai, initState } from "./bot";
 import markdownIt from 'markdown-it';
+import { ChatCompletionRequestMessage } from "openai";
 import { FileBox } from "file-box";
 import qrTerm from "qrcode-terminal";
 import nodeHtmlToImage from 'node-html-to-image';
+
+const MEMORY_LIMIT = 50; // max memory
+let conversation: Array<ChatCompletionRequestMessage> = new Array();
+conversation.forEach(val => initState.push(Object.assign({}, val)));
 
 function convertMarkdownToHtml(markdown: string): string {
     const md = new markdownIt();
@@ -47,16 +52,23 @@ export async function onMessage(msg: Message) {
     }
     // return text
     if (content.startsWith("/t ")) {
+        if (conversation.length === MEMORY_LIMIT) {
+            // reset to initial state when reach the memory limit
+            log.info("Resetting memory");
+            conversation = new Array();
+            conversation.forEach(val => initState.push(Object.assign({}, val)));
+        }
+        conversation.push({ "role": "user", "content": content.replace("/t", "") })
         const response = await openai.createChatCompletion({
             model: "gpt-3.5-turbo",
-            messages: [
-                { "role": "system", "content": "You are a helpful assistant." },
-                { "role": "user", "content": content.replace("/t", "") }
-            ]
+            messages: conversation,
         });
 
         try {
-            await contact.say(response.data.choices[0].message!.content!);
+            const replyContent = response.data.choices[0].message!.content!
+            await contact.say(replyContent);
+            const reply: ChatCompletionRequestMessage = { "role": "assistant", "content": replyContent };
+            conversation.push(reply);
         } catch (e) {
             console.error(e);
         }

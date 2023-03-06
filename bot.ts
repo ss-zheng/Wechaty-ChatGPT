@@ -1,11 +1,12 @@
 // Importing the Wechaty npm package
 import { WechatyBuilder, Contact, Message, ScanStatus, log } from "wechaty";
-import { Configuration, OpenAIApi } from "openai";
+import { Configuration, OpenAIApi, ChatCompletionRequestMessage } from "openai";
 import dotenv from "dotenv";
 import { onScan, onLogin, onLogout, onMessage } from "./utils";
 
 dotenv.config();
 console.log(process.env.OPENAI_API_KEY)
+
 
 // config openAI
 const configuration = new Configuration({
@@ -21,6 +22,9 @@ export const bot = WechatyBuilder.build({
         uos: true,
     },
 })
+
+// Keep the conversation state
+export const initState: Array<ChatCompletionRequestMessage> = new Array({ "role": "system", "content": "You are a helpful assistant." })
 
 bot.on('scan',    onScan)
 bot.on('login',   onLogin)
