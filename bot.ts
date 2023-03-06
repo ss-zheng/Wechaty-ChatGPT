@@ -1,26 +1,17 @@
-// Importing the Wechaty npm package
-import { Wechaty,WechatyBuilder, Contact, Message, ScanStatus, log } from "wechaty";
+import { Client } from "whatsapp-web.js";
+import qrTerm from "qrcode-terminal";
+import markdownIt from 'markdown-it';
 import { Configuration, OpenAIApi, ChatCompletionRequestMessage } from "openai";
-import { PuppetPadlocal } from "wechaty-puppet-padlocal";
-import { onScan, onLogin, onLogout, onMessage, onFriendship } from "./utils";
-import dotenv from "dotenv";
 
-dotenv.config();
-console.log(process.env.OPENAI_API_KEY)
+const MEMORY_LIMIT = 50; // max memory
+const initState: Array<ChatCompletionRequestMessage> = new Array({ "role": "system", "content": "You are a helpful assistant." })
+let conversation: Array<ChatCompletionRequestMessage> = new Array();
+conversation.forEach(val => initState.push(Object.assign({}, val)));
 
-
-export function createBot(): Wechaty {
-  const token: string = process.env.WECHATY_PUPPET_SERVICE_TOKEN!
-  const puppet = new PuppetPadlocal({
-    token,
-  });
-
-  return WechatyBuilder.build({
-    name: "chatgpt-bot",
-    puppet,
-  });
+function convertMarkdownToHtml(markdown: string): string {
+    const md = new markdownIt();
+    return md.render(markdown);
 }
-
 
 // config openAI
 const configuration = new Configuration({
@@ -28,22 +19,50 @@ const configuration = new Configuration({
 });
 export const openai = new OpenAIApi(configuration);
 
-// Initializing the bot
-export const bot = createBot();
+const client = new Client({
+  puppeteer: {
+		args: ['--no-sandbox'],
+	}
+});
 
-// Keep the conversation state
-export const initState: Array<ChatCompletionRequestMessage> = new Array({ "role": "system", "content": "You are a helpful assistant." })
+client.on('qr', (qr) => {
+    // Generate and scan this code with your phone
+    qrTerm.generate(qr, { small: true })
+    console.log('QR RECEIVED', qr);
+});
 
-bot.on('scan',    onScan)
-bot.on('login',   onLogin)
-bot.on('logout',  onLogout)
-bot.on('message', onMessage)
-bot.on('friendship', onFriendship)
+client.on('ready', () => {
+    console.log('Client is ready!');
+});
 
-bot.start()
-  .then(() => log.info('StarterBot', 'Starter Bot Started.'))
-  .catch(e => log.error('StarterBot', e))
+client.on('message', async msg => {
+  console.log(msg.body);
+  if (msg.body == '!ping') {
+    msg.reply('pong');
+  }
+  
+  // return text if no slash command is specified
+  if (conversation.length === MEMORY_LIMIT) {
+    // reset to initial state when reach the memory limit
+    conversation = new Array();
+    conversation.forEach(val => initState.push(Object.assign({}, val)));
+  }
+  conversation.push({ "role": "user", "content": msg.body })
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: conversation,
+  });
 
-bot.ready()
-  .then(() => log.info('StarterBot', 'Starter Bot Ready.'))
-  .catch(e => log.error('StarterBot', e))
+  try {
+    const replyContent = response.data.choices[0].message!.content!
+    msg.reply(replyContent);
+
+    // record reply
+    const reply: ChatCompletionRequestMessage = { "role": "assistant", "content": replyContent };
+    conversation.push(reply);
+  } catch (e) {
+    console.error(e);
+  }
+});
+
+client.initialize();

@@ -21,7 +21,9 @@
     "wechaty": "^1.20.2",
     "wechaty-puppet-padlocal": "^1.20.1",
     "wechaty-puppet-service": "^1.19.9",
-    "wechaty-puppet-wechat": "^1.18.4"
+    "wechaty-puppet-wechat": "^1.18.4",
+    "wechaty-puppet-whatsapp": "^1.16.0",
+    "whatsapp-web.js": "^1.19.4"
   },
   "devDependencies": {
     "@types/markdown-it": "^12.2.3",
