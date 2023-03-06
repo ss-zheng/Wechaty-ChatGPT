@@ -24,7 +24,6 @@
     "wechaty-puppet-wechat": "^1.18.4"
   },
   "devDependencies": {
-    "@types/dotenv": "^8.2.0",
     "@types/markdown-it": "^12.2.3",
     "@types/qrcode-terminal": "^0.12.0"
   }
