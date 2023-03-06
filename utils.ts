@@ -1,4 +1,4 @@
-import { Contact, Message, ScanStatus, log } from "wechaty";
+import { Contact, Message, ScanStatus, log, Friendship } from "wechaty";
 import { bot, openai, initState } from "./bot";
 import markdownIt from 'markdown-it';
 import { ChatCompletionRequestMessage } from "openai";
@@ -107,4 +107,51 @@ export async function onMessage(msg: Message) {
             console.error(e);
         }
     }
+}
+
+export async function onFriendship(friendship: Friendship) {
+    let logMsg;
+
+    try {
+        logMsg = "received `friend` event from " + friendship.contact().name();
+        log.info(logMsg);
+
+        switch (friendship.type()) {
+            /**
+             *
+             * 1. New Friend Request
+             *
+             * when request is set, we can get verify message from `request.hello`,
+             * and accept this request by `request.accept()`
+             */
+
+            case bot.Friendship.Type.Receive:
+                logMsg = 'accepted automatically';
+                log.info("before accept");
+                await friendship.accept();
+
+                // if want to send msg , you need to delay sometimes
+                await new Promise((r) => setTimeout(r, 1000));
+                await friendship.contact().say(`Hi ${friendship.contact().name()} from FreeChatGPT, I am your person asistant!\n你好 ${friendship.contact().name()} 我是你的私人助理FreeChatGPT!`);
+                console.log("after accept");
+                break;
+
+            /**
+             *
+             * 2. Friend Ship Confirmed
+             *
+             */
+            case bot.Friendship.Type.Confirm:
+                logMsg = "friendship confirmed with " + friendship.contact().name();
+                break;
+
+            default:
+                break;
+        }
+    } catch (e) {
+        console.error(e);
+        logMsg = "Friendship try catch failed";
+    }
+
+    log.info(logMsg);
 }

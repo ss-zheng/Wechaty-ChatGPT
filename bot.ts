@@ -2,7 +2,7 @@
 import { Wechaty,WechatyBuilder, Contact, Message, ScanStatus, log } from "wechaty";
 import { Configuration, OpenAIApi, ChatCompletionRequestMessage } from "openai";
 import { PuppetPadlocal } from "wechaty-puppet-padlocal";
-import { onScan, onLogin, onLogout, onMessage } from "./utils";
+import { onScan, onLogin, onLogout, onMessage, onFriendship } from "./utils";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -38,6 +38,7 @@ bot.on('scan',    onScan)
 bot.on('login',   onLogin)
 bot.on('logout',  onLogout)
 bot.on('message', onMessage)
+bot.on('friendship', onFriendship)
 
 bot.start()
   .then(() => log.info('StarterBot', 'Starter Bot Started.'))
