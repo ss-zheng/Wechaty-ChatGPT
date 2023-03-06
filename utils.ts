@@ -67,6 +67,8 @@ export async function onMessage(msg: Message) {
         try {
             const replyContent = response.data.choices[0].message!.content!
             await contact.say(replyContent);
+            
+            // record reply
             const reply: ChatCompletionRequestMessage = { "role": "assistant", "content": replyContent };
             conversation.push(reply);
         } catch (e) {
@@ -75,16 +77,21 @@ export async function onMessage(msg: Message) {
     }
     // return image
     if (content.startsWith("/i ")) {
+        if (conversation.length === MEMORY_LIMIT) {
+            // reset to initial state when reach the memory limit
+            log.info("Resetting memory");
+            conversation = new Array();
+            conversation.forEach(val => initState.push(Object.assign({}, val)));
+        }
+        conversation.push({ "role": "user", "content": content.replace("/i", "") })
         const response = await openai.createChatCompletion({
             model: "gpt-3.5-turbo",
-            messages: [
-                { "role": "system", "content": "You are a helpful assistant." },
-                { "role": "user", "content": content.replace("/i", "") }
-            ]
+            messages: conversation,
         });
 
         try {
-            const html = convertMarkdownToHtml(response.data.choices[0].message!.content!);
+            const replyContent = response.data.choices[0].message!.content!
+            const html = convertMarkdownToHtml(replyContent);
             await nodeHtmlToImage({
                 output: './output.png',
                 html: html
@@ -93,6 +100,10 @@ export async function onMessage(msg: Message) {
             log.info('The image was created successfully!')
             const fileBox = FileBox.fromFile("./output.png");
             await contact.say(fileBox)
+
+            // record reply
+            const reply: ChatCompletionRequestMessage = { "role": "assistant", "content": replyContent };
+            conversation.push(reply);
         } catch (e) {
             console.error(e)
         }
