@@ -1,7 +1,7 @@
 FROM node:19.7.0-bullseye-slim
 
 # We don't need the standalone Chromium
-# ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 # Install Google Chrome Stable
 RUN apt-get update && apt-get install curl gnupg -y 

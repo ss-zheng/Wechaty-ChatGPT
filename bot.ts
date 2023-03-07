@@ -18,8 +18,6 @@ const client = new Client({
     headless: true,
 		args: [
       '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
     ],
 	}
 });
