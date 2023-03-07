@@ -1,12 +1,13 @@
 version: '2.0'
 services: 
-  arb:
+  bot:
     container_name: 'bot'
+    platform: linux/amd64 # build for the deployment platform
     build:
       dockerfile: Dockerfile
       context: ./
     restart: 'always'
-    volumes:
-      - ./:/home/bot
+    environment:
+      NODE_ENV: production
     env_file:
       - dotenv.env

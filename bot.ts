@@ -1,17 +1,11 @@
 import { Client } from "whatsapp-web.js";
 import qrTerm from "qrcode-terminal";
-import markdownIt from 'markdown-it';
 import { Configuration, OpenAIApi, ChatCompletionRequestMessage } from "openai";
 
 const MEMORY_LIMIT = 50; // max memory
 const initState: Array<ChatCompletionRequestMessage> = new Array({ "role": "system", "content": "You are a helpful assistant." })
 let conversation: Array<ChatCompletionRequestMessage> = new Array();
 conversation.forEach(val => initState.push(Object.assign({}, val)));
-
-function convertMarkdownToHtml(markdown: string): string {
-    const md = new markdownIt();
-    return md.render(markdown);
-}
 
 // config openAI
 const configuration = new Configuration({
@@ -21,7 +15,12 @@ export const openai = new OpenAIApi(configuration);
 
 const client = new Client({
   puppeteer: {
-		args: ['--no-sandbox'],
+    headless: true,
+		args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+    ],
 	}
 });
 
@@ -83,7 +82,6 @@ client.on('message', async msg => {
     client.sendMessage(msg.from, helpMenu);
     return
   }
-
   
   // return text if no slash command is specified
   if (conversation.length === MEMORY_LIMIT) {
