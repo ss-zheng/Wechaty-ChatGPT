@@ -2,9 +2,6 @@ import { Client } from "whatsapp-web.js";
 import qrTerm from "qrcode-terminal";
 import markdownIt from 'markdown-it';
 import { Configuration, OpenAIApi, ChatCompletionRequestMessage } from "openai";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const MEMORY_LIMIT = 50; // max memory
 const initState: Array<ChatCompletionRequestMessage> = new Array({ "role": "system", "content": "You are a helpful assistant." })

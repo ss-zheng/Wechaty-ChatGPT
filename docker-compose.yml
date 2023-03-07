@@ -1,0 +1,12 @@
+version: '2.0'
+services: 
+  arb:
+    container_name: 'bot'
+    build:
+      dockerfile: Dockerfile
+      context: ./
+    restart: 'always'
+    volumes:
+      - ./:/home/bot
+    env_file:
+      - dotenv.env
