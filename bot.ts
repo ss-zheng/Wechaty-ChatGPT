@@ -73,9 +73,25 @@ client.on('message', async msg => {
   // reply help
   if (msg.body.startsWith("/help")) {
     const helpMenu = `
-    - */new* : Starts a new session
-    - */retry* : Regenerate last bot answer
-    - */help* : Show help
+*Examples*
+* Explain quantum computing in simple terms
+* Got any creative ideas for a 10 year old’s birthday?
+* How do I make an HTTP request in Javascript?
+
+*Capabilities*
+* Remembers what user said earlier in the conversation
+* Allows user to provide follow-up corrections
+* Trained to decline inappropriate requests
+
+*Limitations*
+* May occasionally generate incorrect information
+* May occasionally produce harmful instructions or biased content
+* Limited knowledge of world and events after 2021
+
+*Slash Commands*
+* _/new_ : Starts a new session
+* _/retry_ : Regenerate last bot answer
+* _/help_ : Show help
     `
     client.sendMessage(msg.from, helpMenu);
     return
