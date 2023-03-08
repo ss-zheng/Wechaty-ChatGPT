@@ -1,8 +1,5 @@
 FROM node:19.7.0-bullseye-slim
 
-# We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-
 # Install Google Chrome Stable
 RUN apt-get update && apt-get install curl gnupg -y 
 RUN curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
