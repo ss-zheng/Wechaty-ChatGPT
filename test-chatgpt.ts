@@ -13,7 +13,7 @@ const openai = new OpenAIApi(configuration);
 
 async function chatGPT() {
     const response = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Who won the world series in 2020?"},
@@ -21,8 +21,9 @@ async function chatGPT() {
             {"role": "user", "content": "Where was it played?"}
         ]
     });
-    return response
+    const replyContent = response.data.choices[0].message!.content!
+    return replyContent
 }
 
         
-console.log(chatGPT())
+console.log(await chatGPT())

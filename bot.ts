@@ -46,7 +46,7 @@ client.on('message', async msg => {
   if (msg.body.startsWith("/retry")) {
     conversation.pop(); // remove last reply
     const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4",
       messages: conversation,
     });
 
@@ -104,7 +104,7 @@ client.on('message', async msg => {
   }
   conversation.push({ "role": "user", "content": msg.body })
   const response = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
+    model: "gpt-4",
     messages: conversation,
   });
 
